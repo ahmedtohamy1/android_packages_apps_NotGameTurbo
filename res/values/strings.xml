@@ -23,6 +23,12 @@
 
     <string name="add_app_title">Add app…</string>
     <string name="add_app_dialog_title">Pick an app</string>
+    <string name="search_apps">Search apps…</string>
+    <string name="add_selected_apps">Add selected apps</string>
+    <string name="add_selected_apps_count">Add (%1$d)</string>
+    <string name="no_apps_found">No apps found</string>
+    <string name="select_all">Select all</string>
+    <string name="deselect_all">Deselect all</string>
 
     <string name="remove_app_title">Remove app</string>
     <string name="remove_app_message">Remove %1$s from custom apps?</string>

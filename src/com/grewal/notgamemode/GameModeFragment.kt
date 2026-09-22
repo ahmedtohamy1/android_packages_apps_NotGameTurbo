@@ -14,7 +14,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.Preference
@@ -154,51 +153,7 @@ class GameModeFragment : SettingsBasePreferenceFragment() {
     }
 
     private fun showAppPicker() {
-        val context = requireContext()
-        val pm = context.packageManager
-        val shown =
-            prefs.customPackages +
-                pm.getInstalledApplications(PackageManager.ApplicationInfoFlags.of(0))
-                    .filter { it.category == ApplicationInfo.CATEGORY_GAME }
-                    .map { it.packageName }
-
-        val candidates =
-            pm.getInstalledApplications(PackageManager.ApplicationInfoFlags.of(0))
-                .filter {
-                    it.packageName !in shown && pm.getLaunchIntentForPackage(it.packageName) != null
-                }
-                .sortedBy { label(pm, it) }
-
-        val iconSize = (32 * resources.displayMetrics.density).toInt()
-        val iconPadding = (12 * resources.displayMetrics.density).toInt()
-        val adapter =
-            object :
-                ArrayAdapter<ApplicationInfo>(
-                    context,
-                    android.R.layout.select_dialog_item,
-                    android.R.id.text1,
-                    candidates,
-                ) {
-                override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                    val view = super.getView(position, convertView, parent)
-                    val app = candidates[position]
-                    val text = view.findViewById<TextView>(android.R.id.text1)
-                    text.text = label(pm, app)
-                    val icon =
-                        pm.getApplicationIcon(app).apply { setBounds(0, 0, iconSize, iconSize) }
-                    text.setCompoundDrawablesRelative(icon, null, null, null)
-                    text.compoundDrawablePadding = iconPadding
-                    return view
-                }
-            }
-
-        AlertDialog.Builder(context)
-            .setTitle(R.string.add_app_dialog_title)
-            .setAdapter(adapter) { _, which ->
-                prefs.addCustom(candidates[which].packageName)
-                rebuild()
-            }
-            .show()
+        startActivity(Intent(requireContext(), AppPickerActivity::class.java))
     }
 
     private fun label(pm: PackageManager, app: ApplicationInfo) =

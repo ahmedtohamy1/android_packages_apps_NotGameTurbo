@@ -22,6 +22,11 @@ class GamePrefs(context: Context) {
         customPackages = customPackages.toMutableSet().apply { add(pkg) }
     }
 
+    fun addCustom(pkgs: Collection<String>) {
+        if (pkgs.isEmpty()) return
+        customPackages = customPackages.toMutableSet().apply { addAll(pkgs) }
+    }
+
     fun removeCustom(pkg: String) {
         customPackages = customPackages.toMutableSet().apply { remove(pkg) }
     }

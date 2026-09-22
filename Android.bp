@@ -20,6 +20,7 @@ android_app {
         "androidx.appcompat_appcompat",
         "androidx.core_core",
         "androidx.preference_preference",
+        "androidx.recyclerview_recyclerview",
         "org.lineageos.settings.resources",
         "vendor.xiaomi.hw.touchfeature-V1-java",
     ],
