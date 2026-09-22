@@ -50,7 +50,8 @@ object TouchFeatureManager {
 
     @Volatile private var prefs: SharedPreferences? = null
 
-    @Volatile private var current: TouchBackend = TouchFeatureBackend
+    // Prefer the kernel touch nodes; touchfeature is used as a fallback.
+    @Volatile private var current: TouchBackend = SysfsTouchBackend
 
     @Synchronized
     fun attach(context: Context) {
@@ -78,11 +79,27 @@ object TouchFeatureManager {
 
     private fun backendFor(backend: Backend) = backends.first { it.id == backend }
 
-    fun isAvailable(): Boolean = current.isAvailable()
+    private fun selectFallbackIfNeeded() {
+        if (current.id != Backend.SYSFS || current.isAvailable()) return
+        val fallback = TouchFeatureBackend
+        if (fallback.isAvailable()) {
+            current = fallback
+            prefs?.edit()?.putString(KEY_BACKEND, fallback.id.name)?.apply()
+            Log.i(TAG, "touch nodes unavailable, fell back to ${fallback.id}")
+        }
+    }
+
+    fun isAvailable(): Boolean {
+        selectFallbackIfNeeded()
+        return current.isAvailable()
+    }
     fun isAvailable(backend: Backend): Boolean = backendFor(backend).isAvailable()
     fun alternativesTo(backend: Backend): List<Backend> =
         backends.map { it.id }.filter { it != backend }
-    private fun setModeValue(mode: Int, value: Int) = current.setModeValue(mode, value)
+    private fun setModeValue(mode: Int, value: Int) {
+        selectFallbackIfNeeded()
+        current.setModeValue(mode, value)
+    }
     fun setGameMode(enabled: Boolean) {
         Log.i(TAG, "setGameMode: $enabled")
         setModeValue(TOUCH_GAME_MODE, if (enabled) 1 else 0)
@@ -101,5 +118,8 @@ object TouchFeatureManager {
 
     fun setTuning(mode: Int, value: Int) = setModeValue(mode, value)
 
-    fun queryMode(mode: Int): ModeQuery = current.queryMode(mode)
+    fun queryMode(mode: Int): ModeQuery {
+        selectFallbackIfNeeded()
+        return current.queryMode(mode)
+    }
 }
