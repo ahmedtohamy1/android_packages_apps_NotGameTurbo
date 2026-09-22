@@ -8,17 +8,18 @@ package com.grewal.notgamemode
 import android.os.Bundle
 import android.view.MenuItem
 import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity
-import com.android.settingslib.collapsingtoolbar.R
-
 class AppPickerActivity : CollapsingToolbarBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        title = getString(com.grewal.notgamemode.R.string.add_app_dialog_title)
+        title = getString(R.string.add_app_dialog_title)
 
         supportFragmentManager
             .beginTransaction()
-            .replace(R.id.content_frame, AppPickerFragment())
+            .replace(
+                com.android.settingslib.collapsingtoolbar.R.id.content_frame,
+                AppPickerFragment(),
+            )
             .commit()
     }
 

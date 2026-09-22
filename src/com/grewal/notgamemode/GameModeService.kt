@@ -55,7 +55,14 @@ class GameModeService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private fun update() {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (::handler.isInitialized) {
+            handler.post { update(force = intent?.action == ACTION_RELOAD) }
+        }
+        return START_STICKY
+    }
+
+    private fun update(force: Boolean = false) {
 
         if (manualOverride) {
             return
@@ -64,20 +71,24 @@ class GameModeService : Service() {
         val foreground = currentForegroundPackage() ?: lastForeground
         lastForeground = foreground
 
-        val shouldEnable = foreground != null && prefs.isEnabled(foreground)
-        if (shouldEnable) {
+        val global = prefs.isGlobalEnabled
+        val shouldEnable = global || (foreground != null && prefs.isEnabled(foreground))
+        val targetPkg = if (global) GamePrefs.GLOBAL_PKG else foreground
+
+        if (shouldEnable && targetPkg != null) {
             if (!gameModeActive) {
                 gameModeActive = true
-                activePkg = foreground
+                activePkg = targetPkg
 
                 saveTuning()
-                applyTuning(foreground!!)
+                applyTuning(targetPkg)
                 TouchFeatureManager.setGameMode(true)
+                TouchFeatureManager.setSuperReport(prefs.isSuperReport(targetPkg))
                 setOrientationTracking(true)
-            } else if (foreground != activePkg) {
-
-                activePkg = foreground
-                applyTuning(foreground!!)
+            } else if (targetPkg != activePkg || force) {
+                activePkg = targetPkg
+                applyTuning(targetPkg)
+                TouchFeatureManager.setSuperReport(prefs.isSuperReport(targetPkg))
             }
         } else if (gameModeActive) {
             stopGameMode()
@@ -140,7 +151,8 @@ class GameModeService : Service() {
     }
 
     companion object {
-        private const val TAG = "GameModeService"
+        const val TAG = "GameModeService"
+        const val ACTION_RELOAD = "com.grewal.notgamemode.ACTION_RELOAD"
         private const val POLL_INTERVAL_MS = 2000L
         private const val QUERY_WINDOW_MS = 10_000L
 

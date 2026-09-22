@@ -5,6 +5,7 @@
 
 package com.grewal.notgamemode
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -58,6 +59,7 @@ class AppSettingsFragment : SettingsBasePreferenceFragment() {
         manualSliders.clear()
 
         val context = requireContext()
+        val isGlobal = pkg == GamePrefs.GLOBAL_PKG
         val store = preferenceManager.sharedPreferences
         val screen = preferenceManager.createPreferenceScreen(context)
 
@@ -67,7 +69,10 @@ class AppSettingsFragment : SettingsBasePreferenceFragment() {
         val masterSwitch =
             MainSwitchPreference(context).apply {
                 key = GamePrefs.enabledKey(pkg)
-                title = getString(R.string.app_enable_title)
+                title = getString(
+                    if (isGlobal) R.string.global_game_mode_title
+                    else R.string.app_enable_title
+                )
                 setDefaultValue(false)
             }
         screen.addPreference(masterSwitch)
@@ -80,6 +85,10 @@ class AppSettingsFragment : SettingsBasePreferenceFragment() {
                 setDefaultValue(true)
                 isIconSpaceReserved = false
                 isEnabled = false
+                setOnPreferenceChangeListener { _, _ ->
+                    notifyService()
+                    true
+                }
             }
         screen.addPreference(superSwitch!!)
 
@@ -110,6 +119,10 @@ class AppSettingsFragment : SettingsBasePreferenceFragment() {
                 value = store?.getInt(presetKey, expert.def) ?: expert.def
                 setDefaultValue(expert.def)
                 isIconSpaceReserved = false
+                setOnPreferenceChangeListener { _, _ ->
+                    notifyService()
+                    true
+                }
             }
         tuning.addPreference(presetSlider!!)
 
@@ -134,6 +147,10 @@ class AppSettingsFragment : SettingsBasePreferenceFragment() {
                     value = store?.getInt(key, range.def) ?: range.def
                     setDefaultValue(range.def)
                     isIconSpaceReserved = false
+                    setOnPreferenceChangeListener { _, _ ->
+                        notifyService()
+                        true
+                    }
                 }
             tuning.addPreference(slider)
             manualSliders.add(slider)
@@ -150,11 +167,13 @@ class AppSettingsFragment : SettingsBasePreferenceFragment() {
         masterSwitch.setOnPreferenceChangeListener { _, newValue ->
             gameEnabled = newValue as Boolean
             updateEnabled()
+            notifyService()
             true
         }
         expertSwitch!!.setOnPreferenceChangeListener { _, newValue ->
             expertOn = newValue as Boolean
             updateEnabled()
+            notifyService()
             true
         }
 
@@ -164,10 +183,23 @@ class AppSettingsFragment : SettingsBasePreferenceFragment() {
     private fun confirmReset() {
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.reset_title)
-            .setMessage(R.string.reset_message)
-            .setPositiveButton(android.R.string.ok) { _, _ -> resetDefaults() }
+            .setMessage(
+                if (pkg == GamePrefs.GLOBAL_PKG) R.string.reset_global_message
+                else R.string.reset_message
+            )
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                resetDefaults()
+                notifyService()
+            }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
+    }
+
+    private fun notifyService() {
+        val context = context ?: return
+        context.startService(
+            Intent(context, GameModeService::class.java).setAction(GameModeService.ACTION_RELOAD)
+        )
     }
 
     private fun resetDefaults() {

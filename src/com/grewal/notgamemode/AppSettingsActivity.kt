@@ -7,23 +7,28 @@ package com.grewal.notgamemode
 
 import android.os.Bundle
 import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity
-import com.android.settingslib.collapsingtoolbar.R
-
 class AppSettingsActivity : CollapsingToolbarBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         intent.getStringExtra(EXTRA_PACKAGE)?.let { pkg ->
-            runCatching {
-                title =
-                    packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0))
+            if (pkg == GamePrefs.GLOBAL_PKG) {
+                title = getString(R.string.global_game_mode_title)
+            } else {
+                runCatching {
+                    title =
+                        packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0))
+                }
             }
         }
 
         supportFragmentManager
             .beginTransaction()
-            .replace(R.id.content_frame, AppSettingsFragment())
+            .replace(
+                com.android.settingslib.collapsingtoolbar.R.id.content_frame,
+                AppSettingsFragment(),
+            )
             .commit()
     }
 

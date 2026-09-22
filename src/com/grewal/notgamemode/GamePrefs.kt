@@ -31,6 +31,10 @@ class GamePrefs(context: Context) {
         customPackages = customPackages.toMutableSet().apply { remove(pkg) }
     }
 
+    var isGlobalEnabled: Boolean
+        get() = isEnabled(GLOBAL_PKG)
+        set(value) = prefs.edit().putBoolean(enabledKey(GLOBAL_PKG), value).apply()
+
     fun isEnabled(pkg: String) = prefs.getBoolean(enabledKey(pkg), false)
 
     fun isSuperReport(pkg: String) = prefs.getBoolean(superKey(pkg), true)
@@ -45,6 +49,7 @@ class GamePrefs(context: Context) {
 
     companion object {
         const val NAME = "game_mode"
+        const val GLOBAL_PKG = "__global__"
         private const val KEY_CUSTOM = "custom_packages"
 
         fun enabledKey(pkg: String) = "enabled_$pkg"

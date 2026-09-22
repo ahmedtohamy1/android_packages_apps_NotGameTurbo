@@ -18,6 +18,12 @@
     <string name="retry">Retry</string>
     <string name="exit">Exit</string>
 
+    <string name="global_category_title">Global</string>
+    <string name="global_game_mode_title">Global game mode</string>
+    <string name="global_game_mode_summary">Apply game mode and touch tuning to all apps and games</string>
+    <string name="global_game_mode_enabled_summary">Enabled • Tap to configure global tuning</string>
+    <string name="global_mode_active_summary">Overridden by global game mode</string>
+
     <string name="games_category_title">Games</string>
     <string name="custom_category_title">Custom apps</string>
 
@@ -65,4 +71,5 @@
 
     <string name="reset_title">Reset to defaults</string>
     <string name="reset_message">Reset game mode settings for this app to their defaults?</string>
+    <string name="reset_global_message">Reset global game mode settings to their defaults?</string>
 </resources>
